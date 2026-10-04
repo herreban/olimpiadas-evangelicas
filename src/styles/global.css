@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Estilos generales del proyecto. Se trabaja sobre todo desde el móvil: letra legible,
+   botones grandes y buen contraste. */
+@theme {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+body {
+  min-height: 100dvh;
+}

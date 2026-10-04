@@ -1,0 +1,36 @@
+# Comprobaciones automáticas: se ejecutan en cada pull request y en main.
+# Si algo falla, la pull request queda marcada y no hay que revisarla a mano.
+name: Comprobaciones
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  ASTRO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Revisar los tipos
+        run: npm run check
+
+      - name: Ejecutar las pruebas
+        run: npm run test
+
+      - name: Comprobar que se construye
+        run: npm run build
