@@ -8,11 +8,15 @@
 ## 1. Qué es
 
 Una aplicación web para que **varias iglesias** gestionen por su cuenta las olimpiadas de sus
-niños y niñas, y los entrenamientos previos.
+niños y niñas y el **seguimiento de los entrenamientos** durante el año.
 
 Cada iglesia entra con su propia cuenta, ve **solo sus datos** y no puede ver ni tocar los de
-ninguna otra. El uso principal es desde el móvil, el mismo día del evento, con varias personas
-apuntando y marcando pruebas a la vez.
+ninguna otra.
+
+El uso principal, durante todo el año, son los **entrenamientos**: ir anotando las marcas que
+alcanzan los niños y ver cómo progresan. El día del evento, la aplicación sirve para apuntar a
+los que participan y para ir marcando las pruebas que se celebran, desde el móvil y con varias
+personas a la vez.
 
 ## 2. Palabras del proyecto
 
@@ -21,13 +25,14 @@ apuntando y marcando pruebas a la vez.
 | **Iglesia** | Cada entidad que usa la aplicación. Agrupa participantes y usuarios. |
 | **Usuario** | Persona con cuenta. Pertenece a **una sola** iglesia. |
 | **Invitación** | Enlace de un solo uso para crear una iglesia o dar de alta a un usuario. |
-| **Participante** | Niño o niña que compite. Guardamos su fecha de nacimiento, no su edad. |
+| **Participante** | Niño o niña que compite y entrena. Guardamos su fecha de nacimiento, no su edad. |
 | **Edición** | Las olimpiadas de un año concreto dentro de una iglesia (2026, 2027…). |
 | **Categoría** | Par de edades (4–5, 6–7 … 16–17). **Se calcula**, no se guarda. |
 | **Prueba** | Cada deporte: maratón, relevos, peso, altura, longitud, carreras lisas. |
 | **Inscripción** | Un participante, en una edición, apuntado a una prueba. |
 | **Celebración** | Una prueba que ya se ha disputado, en una categoría y sexo concretos. |
 | **Hecho** | Una prueba concreta de un participante concreto que ya está hecha. |
+| **Equipo** | Grupo de 4 participantes que corren juntos el relevo. |
 | **Medición** | Marca de entrenamiento: participante, prueba, fecha y valor. |
 
 ## 3. Quién puede hacer qué
@@ -43,9 +48,9 @@ Tres papeles, y nada más:
 | Crear ediciones | — | ✅ | — |
 | Apuntar, editar y dar de baja participantes | — | ✅ | ✅ |
 | Inscribir participantes en las pruebas | — | ✅ | ✅ |
+| Formar los equipos de relevos | — | ✅ | ✅ |
 | Marcar pruebas celebradas y hechas | — | ✅ | ✅ |
-| Anotar mediciones de entrenamiento | — | ✅ | ✅ |
-| Borrar una edición entera | — | ✅ | — |
+| Anotar marcas de entrenamiento | — | ✅ | ✅ |
 | Ver datos de otra iglesia | ❌ (nadie) | ❌ | ❌ |
 
 ## 4. Reglas de oro
@@ -60,9 +65,12 @@ Tres papeles, y nada más:
 3. **Sin correo electrónico.** No hay envío de correos: ni verificación, ni avisos, ni
    recuperación por correo. Las invitaciones y las recuperaciones de contraseña son enlaces de
    un solo uso que se copian y se pasan a mano (WhatsApp, en persona…).
-4. **Datos de menores.** Acceso solo con login, nada en abierto, HTTPS obligatorio, y
-   posibilidad de borrar los datos de un participante o de una edición cuando haga falta.
-5. **Un usuario, una iglesia.** Si alguien ayuda en dos iglesias, tiene dos cuentas.
+4. **Datos de menores.** Acceso solo con login, nada en abierto y HTTPS obligatorio.
+5. **No se borra nada.** Un participante que deja de venir se da de baja: sale de los listados
+   de trabajo, pero conserva su historial y sus marcas. Las ediciones no se borran, se cierran.
+   Si alguna vez hubiera que eliminar los datos de un niño a petición de su familia, se haría
+   a mano.
+6. **Un usuario, una iglesia.** Si alguien ayuda en dos iglesias, tiene dos cuentas.
 
 ## 5. Cómo se calcula la categoría
 
@@ -95,25 +103,38 @@ para que se vea claro y no entre en los listados de competición sin querer.
 - La categoría se muestra calculada, según la edición en la que se esté trabajando.
 - **Aviso de posible duplicado**: al escribir un nombre que ya existe en la misma iglesia y
   categoría, se avisa antes de guardar (los voluntarios escriben con prisa).
-- Editar datos, y dar de baja sin borrar el histórico de años anteriores.
-- El símbolo ♂/♀ se puede corregir de un toque desde el listado.
+- Editar datos y corregir el sexo de un toque desde el listado.
+- **Baja, nunca borrado**: el participante deja de aparecer en los listados de trabajo, pero su
+  historial de años anteriores y sus marcas de entrenamiento se conservan. Se puede reactivar.
 
 ### 6.3 Ediciones
 - Crear la edición de un año (fecha del evento, nombre). Una por iglesia y año.
 - Estados: borrador (se prepara), abierta (día del evento), cerrada (solo consulta).
 - Cambiar de edición para consultar años anteriores.
+- Una edición **no se borra**; se cierra.
 
 ### 6.4 Pruebas e inscripciones
 - Catálogo general: maratón (mixta), relevos, lanzamiento de peso, salto de altura, salto de
   longitud y carreras lisas.
 - Cada prueba declara si va **mixta o desdoblada por sexo**, y si tiene medida (tiempo,
-  distancia, altura) o es solo "hecha/no hecha". Añadir una prueba nueva no debe tocar código.
+  distancia, altura) o no. La medida se usa para las **marcas de entrenamiento**.
 - Todo participante inscrito hace **tres pruebas**: maratón, relevos y **una** de las cuatro
   electivas. Se puede cambiar la electiva sin perder lo ya marcado de las otras dos.
 - Inscribir se puede hacer de uno en uno o por tandas (para meter la lista de una iglesia de
   golpe).
 
-### 6.5 El día del evento: marcar pruebas
+### 6.5 Relevos por equipos
+- Los relevos se corren en **equipos de 4** participantes.
+- Un equipo pertenece a una edición, una categoría y un sexo, y lleva un nombre corto para
+  reconocerlo ("Los Tigres").
+- Un participante puede estar en **un solo equipo** por edición.
+- La pantalla de equipos permite crear un equipo, añadir y quitar miembros, y ver de un vistazo
+  **quién está inscrito en relevos y todavía no tiene equipo**, que es la lista que interesa
+  tener a mano el día del evento.
+- El hecho de haber corrido los relevos se sigue marcando **por participante**, como el resto de
+  pruebas: el equipo es la organización (quién corre con quién), no otra casilla que marcar.
+
+### 6.6 El día del evento: marcar pruebas
 - Dos niveles, como ya funcionaba:
   - **Celebración**: "esta prueba (categoría, sexo) ya se ha disputado".
   - **Hecho**: "este participante ya ha hecho esta prueba".
@@ -122,6 +143,8 @@ para que se vea claro y no entre en los listados de competición sin querer.
 - **Desmarcar una celebración NO desmarca a los participantes**: así no se borra trabajo hecho
   a mano.
 - Queda registrado **quién** marca y desmarca, y **a qué hora**.
+- **En el día de la competición no se anotan marcas**: solo si está hecho o no. Los tiempos y
+  las distancias se anotan en los entrenamientos.
 - Listado con filtros: por prueba (se pueden marcar varias), por categoría (una) y por sexo
   (♂, ♀, las dos o ninguna = todos), más orden (nombre, edad, pendientes).
 - Contador visible de cuántas pruebas se llevan celebradas del total.
@@ -129,23 +152,21 @@ para que se vea claro y no entre en los listados de competición sin querer.
   segundos), y el marcado se pinta al instante aunque la cobertura vaya mal, reintentando si
   falla.
 
-### 6.6 Competición: resultados *(pendiente de confirmar, ver §11)*
-- Además de marcar "hecho", poder anotar la **marca** de cada participante (tiempo, distancia,
-  altura) cuando la prueba la tenga.
-- Con esas marcas, clasificación por prueba, categoría y sexo, y mejores marcas históricas.
-
-### 6.7 Entrenamientos
+### 6.7 Entrenamientos y marcas
+Esta es la parte que se usa durante todo el año y la que guarda el valor de verdad del proyecto.
 - Anotar mediciones: participante, prueba, **fecha** y **valor**, con una nota opcional.
-- Pantalla de evolución por participante: sus marcas en el tiempo, y su mejor marca por prueba.
+- Se puede apuntar una sesión completa del tirón: varios niños y varias pruebas del mismo día.
+- Pantalla de evolución por participante: su historial de marcas y su **mejor marca** por prueba.
 - La mejor marca se calcula según la prueba: en tiempo gana el menor; en distancia y altura, el
   mayor.
-- Se puede apuntar una sesión completa del tirón (varios niños y varias pruebas del mismo día).
-- Comparación entre participantes (por ejemplo, el progreso de la categoría 8–9 en longitud).
+- Comparación entre participantes dentro de una categoría y prueba (por ejemplo, el progreso de
+  la categoría 8–9 en longitud), y aviso de **marca personal superada** cuando alguien mejora
+  una marca suya anterior.
 
 ### 6.8 Histórico
-- Consultar ediciones anteriores: participantes, pruebas celebradas, resultados y clasificación.
-- Los participantes que suben de categoría mantienen su historial: se les sigue por su ficha,
-  no por la categoría del año.
+- Consultar ediciones anteriores: participantes y pruebas celebradas y hechas de cada año.
+- Las marcas de entrenamiento acompañan a cada participante a lo largo de los años, aunque suba
+  de categoría: se sigue por su ficha, no por la categoría del año.
 
 ## 7. Modelo de datos
 
@@ -176,19 +197,22 @@ medida (`ninguna` | `tiempo` | `distancia` | `altura`), unidad (`s`, `m`), senti
 **`inscripciones`** — id, edicion_id, participante_id, prueba_id, creada_en, creada_por.
 Único: (edicion_id, participante_id, prueba_id).
 
+**`equipos`** — id, edicion_id, categoria, sexo, nombre, creado_en, creado_por.
+
+**`equipo_miembros`** — id, equipo_id, participante_id, edicion_id. Único: (equipo_id,
+participante_id) y además (edicion_id, participante_id), para que nadie esté en dos equipos de
+la misma edición.
+
 **`celebraciones`** — id, edicion_id, prueba_id, categoria, sexo (`''` si la prueba es mixta),
 hecha, marcada_en, marcada_por. Único: (edicion_id, prueba_id, categoria, sexo).
 
 **`hechos`** — id, inscripcion_id, hecha, marcada_en, marcada_por. Único: (inscripcion_id).
 
-**`resultados`** — id, inscripcion_id, valor, unidad, registrado_en, registrado_por.
-Único: (inscripcion_id). *(Depende de §11.)*
-
 **`mediciones`** — id, iglesia_id, participante_id, prueba_id, fecha, valor, unidad, nota,
 registrado_en, registrado_por. Índice por (participante_id, prueba_id, fecha).
 
 **`registro`** — id, iglesia_id, usuario_id, accion, entidad, entidad_id, datos, momento.
-Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de categoría.
+Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de equipo.
 
 ### Decisiones de modelado y por qué
 
@@ -197,13 +221,18 @@ Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de categor�
 - **La categoría no se guarda**: se calcula desde la fecha de nacimiento y el año de la edición.
   Una sola fuente de verdad.
 - **Las pruebas son datos, no código**: el catálogo dice cuáles son mixtas y cuáles se desdoblan,
-  y si tienen medida. Añadir una prueba es añadir una fila.
+  y cuáles tienen medida. Añadir una prueba es añadir una fila.
+- **No hay tabla de resultados de competición**: el día del evento solo se marca hecho/no hecho.
+  Todas las marcas viven en `mediciones`, que es donde de verdad se usan, durante todo el año.
 - **Una medición de entrenamiento es una fila** (participante, prueba, fecha, valor). No hay
   tabla de "sesión": la pantalla agrupa por fecha. Menos tablas, misma utilidad.
-- **Hecho y resultado son cosas distintas**: "hecho" es la palomita del día; el resultado es el
-  tiempo o la distancia. Un participante puede estar hecho sin marca anotada.
+- **Los equipos son organización, no marcado**: el hecho de relevos sigue siendo una casilla por
+  participante (y así la regla de la cascada sigue funcionando); el equipo dice quién corre con
+  quién.
 - **Cambios de estado con registro aparte**: las tablas guardan el último estado y `registro`
   guarda la historia. Así las consultas del día son rápidas y sigue habiendo rastro.
+- **Sin borrados**: la baja es un campo (`activo`), no una eliminación. Evita perder historial
+  por un clic de más.
 
 ## 8. Requisitos no funcionales
 
@@ -228,9 +257,9 @@ Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de categor�
 | 0 | Esta especificación y el modelo de datos | **en revisión** |
 | 1 | Cimientos: proyecto, base de datos y migraciones, login, iglesias, papeles, aislamiento, pruebas automáticas y verificación en cada PR | pendiente |
 | 2 | Participantes (fecha de nacimiento, categorías), ediciones | pendiente |
-| 3 | Inscripciones, pruebas del día, marcas, filtros, regla de la cascada | pendiente |
-| 4 | Entrenamientos y evolución de marcas | pendiente |
-| 5 | Histórico, resultados y clasificaciones por año | pendiente |
+| 3 | Inscripciones, equipos de relevos, pruebas del día, filtros y regla de la cascada | pendiente |
+| 4 | Entrenamientos: anotar marcas, evolución y mejores marcas | pendiente |
+| 5 | Histórico por años y consultas | pendiente |
 
 Cada fase entra como una o varias **PR** pequeñas, con su spec ya aprobada, y no se empieza una
 fase sin cerrar la anterior.
@@ -239,20 +268,20 @@ fase sin cerrar la anterior.
 
 - Registro abierto de iglesias o de usuarios.
 - Envío de correos de cualquier tipo.
+- Anotar tiempos o distancias el día de la competición (las marcas se anotan en los
+  entrenamientos).
+- Borrar participantes o ediciones (solo bajas y cierres).
 - Aplicación móvil nativa.
-- Registro de tiempos por vuelta, dorsales, cronometraje electrónico o gestión de pagos.
+- Cronometraje electrónico, dorsales, pagos ni inscripciones de pago.
 - Varias iglesias compartiendo una misma competición (cada iglesia va por su cuenta).
 - Cuentas de usuario en varias iglesias.
 
-## 11. Pendiente de decidir
+## 11. Detalles menores pendientes
 
-1. **Resultados en competición**: ¿anotamos tiempo/distancia además de la palomita de "hecho",
-   para poder hacer clasificaciones y mejores marcas? (Sección 6.6.)
-2. **Relevos**: los relevos son por equipos. ¿Hay que guardar **quién va con quién** y el
-   resultado del equipo, o basta con que cada niño tenga los relevos como hechos? Si hay que
-   guardar equipos, hace falta una tabla más (`equipos` y sus miembros).
-3. **Borrado de datos**: cuando un participante deja de ir, ¿se da de baja (conservando el
-   histórico) o se borra del todo, con sus mediciones? ¿Y una edición entera, se puede borrar?
+1. **Equipos de relevos**: ¿siempre del mismo sexo y la misma categoría, o se permite mezclar?
+   (Entiendo que mismo sexo y categoría, con 4 miembros.)
+2. **Equipos por categoría y sexo**: ¿uno, varios, o sin límite? ¿Y el nombre del equipo es
+   obligatorio u opcional?
 
 ## 12. Registro de decisiones
 
@@ -268,5 +297,8 @@ fase sin cerrar la anterior.
 | 2026-10-04 | **Sin correo electrónico** en ninguna parte del sistema |
 | 2026-10-04 | Tres papeles: plataforma, administrador de iglesia y voluntario |
 | 2026-10-04 | Guardar **fecha de nacimiento** (no edad); los niños repiten y cambian entre años |
-| 2026-10-04 | Se guardan los resultados de cada año para poder consultarlos después |
+| 2026-10-04 | Se conserva el **histórico de cada año** (participantes, pruebas y entrenamientos) |
 | 2026-10-04 | La web vive en este servidor; los usuarios entran desde el móvil |
+| 2026-10-04 | **Las marcas se anotan en los entrenamientos**, que es el uso principal; el día de la competición solo se marca hecho/no hecho |
+| 2026-10-04 | **Relevos por equipos de 4**: se guarda la composición del equipo |
+| 2026-10-04 | **No se borra nada**: bajas con historial y ediciones que se cierran |
