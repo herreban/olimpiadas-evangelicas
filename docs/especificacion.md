@@ -38,7 +38,7 @@ personas a la vez.
 | **Inscripción** | Un participante, en una edición, apuntado a una prueba. |
 | **Celebración** | Una prueba que ya se ha disputado, en una categoría y sexo concretos. |
 | **Hecho** | Una prueba concreta de un participante concreto que ya está hecha. |
-| **Equipo** | Grupo de 4 participantes del mismo sexo que corren juntos el relevo. |
+| **Equipo** | Grupo de 4 participantes del mismo sexo que corren juntos el relevo. **Uno por iglesia, categoría y sexo.** |
 | **Medición** | Marca de entrenamiento: participante, prueba, fecha y valor. |
 
 ## 3. Quién puede hacer qué
@@ -165,8 +165,15 @@ Los valores los carga el administrador de la plataforma (Esteban) y los ven toda
   categorías distintas.
 - El equipo **compite en la categoría del miembro de más edad**. Esa categoría **se calcula**
   desde los miembros: no se guarda, y si cambia la composición cambia sola.
-- Un equipo pertenece a una edición y lleva un nombre corto para reconocerlo ("Los Tigres").
-- Un participante puede estar en **un solo equipo** por edición.
+- **Un solo equipo por iglesia, categoría y sexo.** Como el equipo compite en la categoría del
+  miembro de más edad, no puede haber dos equipos de la misma iglesia compitiendo en la misma
+  categoría y sexo. Si al cambiar los miembros se chocara con otro equipo, la aplicación avisa.
+- Un equipo pertenece a una edición y puede llevar un nombre corto para reconocerlo ("Los
+  Tigres"); el nombre es **opcional**: si no se pone, se muestra por su categoría y sexo
+  ("Equipo de 10–11 ♂").
+- Un participante puede estar en **un solo equipo** por edición. Como solo hay un equipo por
+  categoría y sexo, esto también significa que **en relevos compite un solo equipo por edad y
+  sexo**.
 - La pantalla de equipos permite crear un equipo, añadir y quitar miembros, y ver de un vistazo
   **qué participantes no están todavía en ningún equipo**, que es la lista que hace falta para
   formar los equipos el día del evento.
@@ -246,8 +253,9 @@ plaza (rellenos solo en las específicas, para poder exigir la plaza única), pl
 ocupación), creada_en, creada_por. Único: (edicion_id, participante_id, prueba_id) y, en las
 específicas, único (edicion_id, prueba_id, categoria, sexo).
 
-**`equipos`** — id, edicion_id, sexo, nombre, creado_en, creado_por. **Sin categoría**: se
-calcula como la del miembro de más edad.
+**`equipos`** — id, edicion_id, sexo, nombre (opcional), **categoria** (la del miembro de más
+edad, que la aplicación mantiene al día al cambiar los miembros), creado_en, creado_por.
+Único: (edicion_id, sexo, categoria), porque solo hay un equipo por categoría y sexo.
 
 **`equipo_miembros`** — id, equipo_id, participante_id, edicion_id. Único: (equipo_id,
 participante_id) y además (edicion_id, participante_id), para que nadie esté en dos equipos de
@@ -270,9 +278,10 @@ Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de equipo.
   edad dejaría los datos viejos mal para siempre.
 - **La categoría no se guarda**: se calcula desde la fecha de nacimiento y el año de la edición.
   Una sola fuente de verdad.
-- **La categoría de un equipo tampoco se guarda**: como los equipos pueden mezclar edades, la
-  categoría es la del miembro de más edad y se calcula. Si se guardara, habría que acordarse de
-  actualizarla cada vez que cambia un miembro.
+- **La categoría de un equipo se calcula y se guarda copiada**: como los equipos pueden mezclar
+  edades, la categoría es la del miembro de más edad. La guarda la aplicación (nunca el usuario)
+  porque hace falta para exigir en la base de datos que no haya dos equipos de la misma iglesia
+  en la misma categoría y sexo; se recalcula sola cada vez que cambia un miembro.
 - **La plaza única se protege en la base de datos**: para poder exigirla, la inscripción guarda
   la categoría y el sexo de la plaza (son datos calculados que se copian al crearla, y solo en
   las pruebas específicas). Es la excepción razonable a "no guardar lo que se calcula": sin eso,
@@ -329,6 +338,7 @@ fase sin cerrar la anterior.
   entrenamientos).
 - Borrar participantes o ediciones (solo bajas y cierres).
 - Segunda plaza por iglesia en una misma prueba, categoría y sexo.
+- Más de un equipo por iglesia, categoría y sexo.
 - Relevos para quien no esté en un equipo de cuatro.
 - Aplicación móvil nativa.
 - Cronometraje electrónico, dorsales, pagos ni inscripciones de pago.
@@ -338,12 +348,8 @@ fase sin cerrar la anterior.
 ## 11. Detalles pendientes de confirmar
 
 1. **Los valores de la ficha de las pruebas**: el peso de la bola por categoría, la distancia de
-   la maratón por categoría, y las edades mínimas de cada prueba (por ahora: altura desde 8
-   años). Los cargarías tú como administrador de la plataforma.
-2. **¿La plaza es también por sexo?** Entiendo que sí, porque las pruebas específicas van
-   desdobladas: en 4–5 habría una plaza de peso para chicos y otra para chicas. Confirmar.
-3. **Equipos**: ¿puede haber varios equipos que compitan en la misma categoría y sexo, o solo
-   uno? ¿Y el nombre del equipo es obligatorio u opcional?
+   la maratón por categoría y las edades mínimas de cada prueba (por ahora, la altura desde 8
+   años). Se cargan desde la pantalla de administración de la plataforma, sin tocar programa.
 
 ## 12. Registro de decisiones
 
@@ -369,3 +375,6 @@ fase sin cerrar la anterior.
 | 2026-10-04 | **Una plaza por iglesia, categoría, sexo y prueba específica** (la maratón la hacen todos) |
 | 2026-10-04 | **Los relevos no son obligatorios**: solo participa quien entra en un equipo, y la inscripción la gestiona la aplicación según el equipo |
 | 2026-10-04 | Cada prueba lleva una **ficha con datos por categoría** (peso de la bola, distancia de la maratón) y su **edad mínima**; la altura empieza en 8 años |
+| 2026-10-04 | Confirmado: **la plaza es por sexo**, una por categoría y sexo |
+| 2026-10-04 | **Un solo equipo por iglesia, categoría y sexo**, y un participante en un solo equipo: en relevos compite un equipo por edad y sexo |
+| 2026-10-04 | El **nombre del equipo es opcional**: si no se pone, se muestra por su categoría y sexo |
