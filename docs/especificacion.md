@@ -1,6 +1,7 @@
 # Especificación — Olimpiadas Evangélicas
 
-**Estado:** borrador para revisión (fase 0). Nada de código hasta que Esteban apruebe este documento.
+**Estado:** fase 0 aprobada en lo esencial. Pendientes solo los valores de la ficha de las
+pruebas y dos detalles de los equipos (§11). Nada de código de la fase 1 hasta el adelante.
 **Fecha:** 4 de octubre de 2026
 
 ---
@@ -29,8 +30,11 @@ personas a la vez.
 | **Edición** | Las olimpiadas de un año concreto dentro de una iglesia (2026, 2027…). |
 | **Categoría** | Par de edades (4–5, 6–7 … 16–17). **Se calcula**, no se guarda. |
 | **Prueba** | Cada deporte: maratón, relevos, peso, altura, longitud, carreras lisas. |
-| **Prueba común** | Maratón y relevos: las hacen todos los participantes. |
+| **Prueba común** | La **maratón**: la hacen todos los participantes. |
 | **Prueba específica** | Peso, altura, longitud y carreras lisas: cada participante elige una. |
+| **Plaza** | El hueco de una iglesia en una prueba específica, para una categoría y sexo. **Una por iglesia, categoría, sexo y prueba.** |
+| **Relevos** | Prueba por equipos de 4. Solo participa quien está en un equipo. |
+| **Ficha de la prueba** | Los datos de cada prueba por categoría: peso de la bola, distancia de la maratón, edad mínima… |
 | **Inscripción** | Un participante, en una edición, apuntado a una prueba. |
 | **Celebración** | Una prueba que ya se ha disputado, en una categoría y sexo concretos. |
 | **Hecho** | Una prueba concreta de un participante concreto que ya está hecha. |
@@ -53,6 +57,7 @@ Tres papeles, y nada más:
 | Formar los equipos de relevos | — | ✅ | ✅ |
 | Marcar pruebas celebradas y hechas | — | ✅ | ✅ |
 | Anotar marcas de entrenamiento | — | ✅ | ✅ |
+| Editar la ficha de las pruebas | ✅ | — | — |
 | Ver datos de otra iglesia | ❌ (nadie) | ❌ | ❌ |
 
 ## 4. Reglas de oro
@@ -73,6 +78,8 @@ Tres papeles, y nada más:
    Si alguna vez hubiera que eliminar los datos de un niño a petición de su familia, se haría
    a mano.
 6. **Un usuario, una iglesia.** Si alguien ayuda en dos iglesias, tiene dos cuentas.
+7. **Una plaza por iglesia, categoría, sexo y prueba específica.** Cada iglesia lleva **un solo
+   participante** a cada prueba específica en cada categoría y sexo.
 
 ## 5. Cómo se calcula la categoría
 
@@ -115,21 +122,45 @@ para que se vea claro y no entre en los listados de competición sin querer.
 - Cambiar de edición para consultar años anteriores.
 - Una edición **no se borra**; se cierra.
 
-### 6.4 Pruebas e inscripciones
-- Catálogo general: **maratón** (mixta) y **relevos** son las pruebas comunes; **peso**,
-  **altura**, **longitud** y **carreras lisas** son las específicas, de las que cada
-  participante elige una.
-- Cada prueba declara si va **mixta o desdoblada por sexo**, y si tiene medida (tiempo,
-  distancia, altura) o no. La medida se usa para las **marcas de entrenamiento**.
-- Todo participante inscrito hace **tres pruebas**: maratón, relevos y **una** de las cuatro
-  específicas. Se puede cambiar la elegida sin perder lo ya marcado de las otras dos.
-- **Una plaza por categoría y prueba específica** *(pendiente de confirmar, ver §11)*: en cada
-  categoría, sexo y prueba específica solo habría un participante por iglesia.
+### 6.4 Pruebas, plazas e inscripciones
+- Catálogo general: **maratón** (mixta) la hacen **todos**; **peso**, **altura**, **longitud** y
+  **carreras lisas** son las específicas, de las que cada participante hace **una**; **relevos**
+  solo lo corre quien entra en un equipo.
+- Cada prueba declara si va **mixta o desdoblada por sexo**, si tiene medida (tiempo, distancia,
+  altura) o no, y su ficha (ver 6.5).
+- **Una plaza por iglesia, categoría, sexo y prueba específica.** Ejemplo: si un niño de 4 años
+  de la iglesia X se apunta a lanzamiento de peso, **ningún otro** niño de 4 o 5 años de esa
+  iglesia puede apuntarse a peso. Al intentarlo, la aplicación avisa con claridad: "la plaza de
+  peso en 4–5 ♂ la tiene Adrián" y ofrece cambiar la prueba o quitar la inscripción anterior.
+- Es una **regla de la base de datos**, no solo de la pantalla: así no se puede colar por
+  descuido ni desde dos móviles a la vez.
+- Las inscripciones de **maratón** y de la **específica** se crean al apuntar al participante.
+  La de **relevos** la gestiona la aplicación sola: aparece al entrar en un equipo y desaparece
+  al salir (avisando de que se pierde la marca de relevos de ese niño).
 - Inscribir se puede hacer de uno en uno o por tandas (para meter la lista de una iglesia de
   golpe).
+- Un participante cuya categoría quede fuera de 4–17 no se puede inscribir.
 
-### 6.5 Relevos por equipos
-- Los relevos se corren en **equipos de 4** participantes.
+### 6.5 La ficha de cada prueba
+Cada prueba lleva sus datos, que **cambian según la categoría**:
+
+- **Lanzamiento de peso**: el peso de la bola para cada categoría.
+- **Maratón**: la distancia a recorrer en cada categoría.
+- **Altura**: tiene **edad mínima** (desde 8 años): en las categorías 4–5 y 6–7 no se ofrece.
+- En general, cada prueba puede declarar su **edad mínima** y sus datos por categoría
+  (por ejemplo, en carreras lisas la distancia de cada categoría).
+
+Para qué sirve:
+- Al inscribir: si un niño no llega a la edad mínima, la prueba no se le ofrece.
+- El día del evento: los voluntarios y los jueces ven de un vistazo "peso: 2 kg" o "maratón:
+  800 m" en la categoría que están atendiendo.
+- En los entrenamientos: las marcas se anotan sabiendo con qué peso o distancia se entrena.
+
+Los valores los carga el administrador de la plataforma (Esteban) y los ven todas las iglesias.
+
+### 6.6 Relevos por equipos
+- Los relevos se corren en **equipos de 4** participantes, y **no son obligatorios**: muchas
+  veces no se pueden juntar cuatro, así que solo participa quien está en un equipo.
 - Un equipo es **de un solo sexo**, pero **puede mezclar edades**: se admiten miembros de
   categorías distintas.
 - El equipo **compite en la categoría del miembro de más edad**. Esa categoría **se calcula**
@@ -137,17 +168,19 @@ para que se vea claro y no entre en los listados de competición sin querer.
 - Un equipo pertenece a una edición y lleva un nombre corto para reconocerlo ("Los Tigres").
 - Un participante puede estar en **un solo equipo** por edición.
 - La pantalla de equipos permite crear un equipo, añadir y quitar miembros, y ver de un vistazo
-  **quién está inscrito en relevos y todavía no tiene equipo**, que es la lista que interesa
-  tener a mano el día del evento.
-- El hecho de haber corrido los relevos se sigue marcando **por participante**, como el resto de
-  pruebas: el equipo es la organización (quién corre con quién), no otra casilla que marcar.
+  **qué participantes no están todavía en ningún equipo**, que es la lista que hace falta para
+  formar los equipos el día del evento.
+- **A los participantes que no están en un equipo no les aparece la prueba de relevos** en su
+  ficha ni en el listado del día: ni para marcar ni para nada.
+- El hecho de haber corrido los relevos se marca **por participante**, como el resto de pruebas.
 
-### 6.6 El día del evento: marcar pruebas
+### 6.7 El día del evento: marcar pruebas
 - Dos niveles, como ya funcionaba:
   - **Celebración**: "esta prueba (categoría, sexo) ya se ha disputado".
   - **Hecho**: "este participante ya ha hecho esta prueba".
 - **Regla de la cascada**: al marcar una celebración, se dan por hechos todos los participantes
-  que hacen esa prueba en esa categoría y sexo. La maratón es mixta: marca a los dos sexos.
+  que hacen esa prueba en esa categoría y sexo. La maratón es mixta: marca a los dos sexos. En
+  relevos, solo a los que están en equipos de esa categoría y sexo.
 - **Desmarcar una celebración NO desmarca a los participantes**: así no se borra trabajo hecho
   a mano.
 - Queda registrado **quién** marca y desmarca, y **a qué hora**.
@@ -160,10 +193,11 @@ para que se vea claro y no entre en los listados de competición sin querer.
   segundos), y el marcado se pinta al instante aunque la cobertura vaya mal, reintentando si
   falla.
 
-### 6.7 Entrenamientos y marcas
+### 6.8 Entrenamientos y marcas
 Esta es la parte que se usa durante todo el año y la que guarda el valor de verdad del proyecto.
 - Anotar mediciones: participante, prueba, **fecha** y **valor**, con una nota opcional.
 - Se puede apuntar una sesión completa del tirón: varios niños y varias pruebas del mismo día.
+- Al anotar se tiene a mano la ficha de la prueba (peso de la bola, distancia) de la categoría.
 - Pantalla de evolución por participante: su historial de marcas y su **mejor marca** por prueba.
 - La mejor marca se calcula según la prueba: en tiempo gana el menor; en distancia y altura, el
   mayor.
@@ -171,7 +205,7 @@ Esta es la parte que se usa durante todo el año y la que guarda el valor de ver
   la categoría 8–9 en longitud), y aviso de **marca personal superada** cuando alguien mejora
   una marca suya anterior.
 
-### 6.8 Histórico
+### 6.9 Histórico
 - Consultar ediciones anteriores: participantes y pruebas celebradas y hechas de cada año.
 - Las marcas de entrenamiento acompañan a cada participante a lo largo de los años, aunque suba
   de categoría: se sigue por su ficha, no por la categoría del año.
@@ -198,12 +232,19 @@ caduca_en, usada_en, usada_por.
 creado_en, actualizado_en. Índice por (iglesia_id, nombre normalizado).
 
 **`pruebas`** — id, clave (`maraton`, `relevos`, `peso`, `altura`, `longitud`, `carreras`),
-nombre, icono, clase (`comun` | `especifica`), va_por_sexo (sí/no), medida (`ninguna` | `tiempo`
-| `distancia` | `altura`), unidad (`s`, `m`), sentido (`menor_mejor` | `mayor_mejor`), orden.
+nombre, icono, clase (`comun` = maratón | `especifica` | `equipos` = relevos), va_por_sexo
+(sí/no), medida (`ninguna` | `tiempo` | `distancia` | `altura`), unidad (`s`, `m`), sentido
+(`menor_mejor` | `mayor_mejor`), **edad_minima** (vacío si no tiene), orden.
 **Catálogo global**, no por iglesia.
 
-**`inscripciones`** — id, edicion_id, participante_id, prueba_id, creada_en, creada_por.
-Único: (edicion_id, participante_id, prueba_id).
+**`prueba_parametros`** — id, prueba_id, categoria, parametro (`peso_bola`, `distancia`,
+`edad_minima`…), valor, unidad, nota. Único: (prueba_id, categoria, parametro). Es la **ficha de
+la prueba**: el peso de la bola en 8–9, la distancia de la maratón en 10–11, etc.
+
+**`inscripciones`** — id, edicion_id, participante_id, prueba_id, **categoria** y **sexo** de la
+plaza (rellenos solo en las específicas, para poder exigir la plaza única), plaza (marca de
+ocupación), creada_en, creada_por. Único: (edicion_id, participante_id, prueba_id) y, en las
+específicas, único (edicion_id, prueba_id, categoria, sexo).
 
 **`equipos`** — id, edicion_id, sexo, nombre, creado_en, creado_por. **Sin categoría**: se
 calcula como la del miembro de más edad.
@@ -232,16 +273,19 @@ Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de equipo.
 - **La categoría de un equipo tampoco se guarda**: como los equipos pueden mezclar edades, la
   categoría es la del miembro de más edad y se calcula. Si se guardara, habría que acordarse de
   actualizarla cada vez que cambia un miembro.
-- **Las pruebas son datos, no código**: el catálogo dice cuáles son comunes y cuáles específicas,
-  cuáles son mixtas y cuáles se desdoblan, y cuáles tienen medida. Añadir una prueba es añadir
-  una fila.
+- **La plaza única se protege en la base de datos**: para poder exigirla, la inscripción guarda
+  la categoría y el sexo de la plaza (son datos calculados que se copian al crearla, y solo en
+  las pruebas específicas). Es la excepción razonable a "no guardar lo que se calcula": sin eso,
+  la regla no se puede garantizar y se colaría desde dos móviles a la vez.
+- **Las pruebas son datos, no código**, y su ficha también (`prueba_parametros`): el peso de la
+  bola, la distancia de la maratón y las edades mínimas se cambian editando datos, no programa.
+- **Los relevos dependen del equipo**: la inscripción de relevos la crea y la quita la
+  aplicación al entrar y salir de un equipo. Así a nadie le aparece una prueba que no va a
+  correr, y la regla de la cascada solo afecta a quien corre.
 - **No hay tabla de resultados de competición**: el día del evento solo se marca hecho/no hecho.
   Todas las marcas viven en `mediciones`, que es donde de verdad se usan, durante todo el año.
 - **Una medición de entrenamiento es una fila** (participante, prueba, fecha, valor). No hay
   tabla de "sesión": la pantalla agrupa por fecha. Menos tablas, misma utilidad.
-- **Los equipos son organización, no marcado**: el hecho de relevos sigue siendo una casilla por
-  participante (y así la regla de la cascada sigue funcionando); el equipo dice quién corre con
-  quién.
 - **Cambios de estado con registro aparte**: las tablas guardan el último estado y `registro`
   guarda la historia. Así las consultas del día son rápidas y sigue habiendo rastro.
 - **Sin borrados**: la baja es un campo (`activo`), no una eliminación. Evita perder historial
@@ -267,10 +311,10 @@ Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de equipo.
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| 0 | Esta especificación y el modelo de datos | **en revisión** |
+| 0 | Esta especificación y el modelo de datos | **cerrada en lo esencial** |
 | 1 | Cimientos: proyecto, base de datos y migraciones, login, iglesias, papeles, aislamiento, pruebas automáticas y verificación en cada PR | pendiente |
-| 2 | Participantes (fecha de nacimiento, categorías), ediciones | pendiente |
-| 3 | Inscripciones, equipos de relevos, pruebas del día, filtros y regla de la cascada | pendiente |
+| 2 | Participantes (fecha de nacimiento, categorías), ediciones y catálogo de pruebas con su ficha | pendiente |
+| 3 | Plazas e inscripciones, equipos de relevos, pruebas del día, filtros y regla de la cascada | pendiente |
 | 4 | Entrenamientos: anotar marcas, evolución y mejores marcas | pendiente |
 | 5 | Histórico por años y consultas | pendiente |
 
@@ -284,6 +328,8 @@ fase sin cerrar la anterior.
 - Anotar tiempos o distancias el día de la competición (las marcas se anotan en los
   entrenamientos).
 - Borrar participantes o ediciones (solo bajas y cierres).
+- Segunda plaza por iglesia en una misma prueba, categoría y sexo.
+- Relevos para quien no esté en un equipo de cuatro.
 - Aplicación móvil nativa.
 - Cronometraje electrónico, dorsales, pagos ni inscripciones de pago.
 - Varias iglesias compartiendo una misma competición (cada iglesia va por su cuenta).
@@ -291,13 +337,13 @@ fase sin cerrar la anterior.
 
 ## 11. Detalles pendientes de confirmar
 
-1. **"Un participante por edad y prueba específica"**: si significa que en cada categoría, sexo y
-   prueba específica solo hay **una plaza** por iglesia (y, en relevos, un solo equipo por
-   categoría), o si se refiere a que cada niño va a **una sola** prueba específica y a un solo
-   equipo, que es como ya está definido.
-2. **Equipos por categoría y sexo**: ¿puede haber varios equipos que compitan en la misma
-   categoría y sexo, o solo uno?
-3. ¿El nombre del equipo es obligatorio u opcional?
+1. **Los valores de la ficha de las pruebas**: el peso de la bola por categoría, la distancia de
+   la maratón por categoría, y las edades mínimas de cada prueba (por ahora: altura desde 8
+   años). Los cargarías tú como administrador de la plataforma.
+2. **¿La plaza es también por sexo?** Entiendo que sí, porque las pruebas específicas van
+   desdobladas: en 4–5 habría una plaza de peso para chicos y otra para chicas. Confirmar.
+3. **Equipos**: ¿puede haber varios equipos que compitan en la misma categoría y sexo, o solo
+   uno? ¿Y el nombre del equipo es obligatorio u opcional?
 
 ## 12. Registro de decisiones
 
@@ -320,3 +366,6 @@ fase sin cerrar la anterior.
 | 2026-10-04 | **Un participante, un solo equipo** por edición |
 | 2026-10-04 | Los equipos son **de un solo sexo pero pueden mezclar edades**, y compiten en la **categoría del miembro de más edad** (calculada) |
 | 2026-10-04 | **No se borra nada**: bajas con historial y ediciones que se cierran |
+| 2026-10-04 | **Una plaza por iglesia, categoría, sexo y prueba específica** (la maratón la hacen todos) |
+| 2026-10-04 | **Los relevos no son obligatorios**: solo participa quien entra en un equipo, y la inscripción la gestiona la aplicación según el equipo |
+| 2026-10-04 | Cada prueba lleva una **ficha con datos por categoría** (peso de la bola, distancia de la maratón) y su **edad mínima**; la altura empieza en 8 años |
