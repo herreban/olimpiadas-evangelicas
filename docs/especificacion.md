@@ -29,10 +29,12 @@ personas a la vez.
 | **Edición** | Las olimpiadas de un año concreto dentro de una iglesia (2026, 2027…). |
 | **Categoría** | Par de edades (4–5, 6–7 … 16–17). **Se calcula**, no se guarda. |
 | **Prueba** | Cada deporte: maratón, relevos, peso, altura, longitud, carreras lisas. |
+| **Prueba común** | Maratón y relevos: las hacen todos los participantes. |
+| **Prueba específica** | Peso, altura, longitud y carreras lisas: cada participante elige una. |
 | **Inscripción** | Un participante, en una edición, apuntado a una prueba. |
 | **Celebración** | Una prueba que ya se ha disputado, en una categoría y sexo concretos. |
 | **Hecho** | Una prueba concreta de un participante concreto que ya está hecha. |
-| **Equipo** | Grupo de 4 participantes que corren juntos el relevo. |
+| **Equipo** | Grupo de 4 participantes del mismo sexo que corren juntos el relevo. |
 | **Medición** | Marca de entrenamiento: participante, prueba, fecha y valor. |
 
 ## 3. Quién puede hacer qué
@@ -114,19 +116,25 @@ para que se vea claro y no entre en los listados de competición sin querer.
 - Una edición **no se borra**; se cierra.
 
 ### 6.4 Pruebas e inscripciones
-- Catálogo general: maratón (mixta), relevos, lanzamiento de peso, salto de altura, salto de
-  longitud y carreras lisas.
+- Catálogo general: **maratón** (mixta) y **relevos** son las pruebas comunes; **peso**,
+  **altura**, **longitud** y **carreras lisas** son las específicas, de las que cada
+  participante elige una.
 - Cada prueba declara si va **mixta o desdoblada por sexo**, y si tiene medida (tiempo,
   distancia, altura) o no. La medida se usa para las **marcas de entrenamiento**.
 - Todo participante inscrito hace **tres pruebas**: maratón, relevos y **una** de las cuatro
-  electivas. Se puede cambiar la electiva sin perder lo ya marcado de las otras dos.
+  específicas. Se puede cambiar la elegida sin perder lo ya marcado de las otras dos.
+- **Una plaza por categoría y prueba específica** *(pendiente de confirmar, ver §11)*: en cada
+  categoría, sexo y prueba específica solo habría un participante por iglesia.
 - Inscribir se puede hacer de uno en uno o por tandas (para meter la lista de una iglesia de
   golpe).
 
 ### 6.5 Relevos por equipos
 - Los relevos se corren en **equipos de 4** participantes.
-- Un equipo pertenece a una edición, una categoría y un sexo, y lleva un nombre corto para
-  reconocerlo ("Los Tigres").
+- Un equipo es **de un solo sexo**, pero **puede mezclar edades**: se admiten miembros de
+  categorías distintas.
+- El equipo **compite en la categoría del miembro de más edad**. Esa categoría **se calcula**
+  desde los miembros: no se guarda, y si cambia la composición cambia sola.
+- Un equipo pertenece a una edición y lleva un nombre corto para reconocerlo ("Los Tigres").
 - Un participante puede estar en **un solo equipo** por edición.
 - La pantalla de equipos permite crear un equipo, añadir y quitar miembros, y ver de un vistazo
   **quién está inscrito en relevos y todavía no tiene equipo**, que es la lista que interesa
@@ -190,14 +198,15 @@ caduca_en, usada_en, usada_por.
 creado_en, actualizado_en. Índice por (iglesia_id, nombre normalizado).
 
 **`pruebas`** — id, clave (`maraton`, `relevos`, `peso`, `altura`, `longitud`, `carreras`),
-nombre, icono, papel (`comun` = maratón y relevos | `electiva`), va_por_sexo (sí/no),
-medida (`ninguna` | `tiempo` | `distancia` | `altura`), unidad (`s`, `m`), sentido
-(`menor_mejor` | `mayor_mejor`), orden. **Catálogo global**, no por iglesia.
+nombre, icono, clase (`comun` | `especifica`), va_por_sexo (sí/no), medida (`ninguna` | `tiempo`
+| `distancia` | `altura`), unidad (`s`, `m`), sentido (`menor_mejor` | `mayor_mejor`), orden.
+**Catálogo global**, no por iglesia.
 
 **`inscripciones`** — id, edicion_id, participante_id, prueba_id, creada_en, creada_por.
 Único: (edicion_id, participante_id, prueba_id).
 
-**`equipos`** — id, edicion_id, categoria, sexo, nombre, creado_en, creado_por.
+**`equipos`** — id, edicion_id, sexo, nombre, creado_en, creado_por. **Sin categoría**: se
+calcula como la del miembro de más edad.
 
 **`equipo_miembros`** — id, equipo_id, participante_id, edicion_id. Único: (equipo_id,
 participante_id) y además (edicion_id, participante_id), para que nadie esté en dos equipos de
@@ -220,8 +229,12 @@ Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de equipo.
   edad dejaría los datos viejos mal para siempre.
 - **La categoría no se guarda**: se calcula desde la fecha de nacimiento y el año de la edición.
   Una sola fuente de verdad.
-- **Las pruebas son datos, no código**: el catálogo dice cuáles son mixtas y cuáles se desdoblan,
-  y cuáles tienen medida. Añadir una prueba es añadir una fila.
+- **La categoría de un equipo tampoco se guarda**: como los equipos pueden mezclar edades, la
+  categoría es la del miembro de más edad y se calcula. Si se guardara, habría que acordarse de
+  actualizarla cada vez que cambia un miembro.
+- **Las pruebas son datos, no código**: el catálogo dice cuáles son comunes y cuáles específicas,
+  cuáles son mixtas y cuáles se desdoblan, y cuáles tienen medida. Añadir una prueba es añadir
+  una fila.
 - **No hay tabla de resultados de competición**: el día del evento solo se marca hecho/no hecho.
   Todas las marcas viven en `mediciones`, que es donde de verdad se usan, durante todo el año.
 - **Una medición de entrenamiento es una fila** (participante, prueba, fecha, valor). No hay
@@ -276,12 +289,15 @@ fase sin cerrar la anterior.
 - Varias iglesias compartiendo una misma competición (cada iglesia va por su cuenta).
 - Cuentas de usuario en varias iglesias.
 
-## 11. Detalles menores pendientes
+## 11. Detalles pendientes de confirmar
 
-1. **Equipos de relevos**: ¿siempre del mismo sexo y la misma categoría, o se permite mezclar?
-   (Entiendo que mismo sexo y categoría, con 4 miembros.)
-2. **Equipos por categoría y sexo**: ¿uno, varios, o sin límite? ¿Y el nombre del equipo es
-   obligatorio u opcional?
+1. **"Un participante por edad y prueba específica"**: si significa que en cada categoría, sexo y
+   prueba específica solo hay **una plaza** por iglesia (y, en relevos, un solo equipo por
+   categoría), o si se refiere a que cada niño va a **una sola** prueba específica y a un solo
+   equipo, que es como ya está definido.
+2. **Equipos por categoría y sexo**: ¿puede haber varios equipos que compitan en la misma
+   categoría y sexo, o solo uno?
+3. ¿El nombre del equipo es obligatorio u opcional?
 
 ## 12. Registro de decisiones
 
@@ -300,5 +316,7 @@ fase sin cerrar la anterior.
 | 2026-10-04 | Se conserva el **histórico de cada año** (participantes, pruebas y entrenamientos) |
 | 2026-10-04 | La web vive en este servidor; los usuarios entran desde el móvil |
 | 2026-10-04 | **Las marcas se anotan en los entrenamientos**, que es el uso principal; el día de la competición solo se marca hecho/no hecho |
-| 2026-10-04 | **Relevos por equipos de 4**: se guarda la composición del equipo |
+| 2026-10-04 | **Relevos por equipos de 4** |
+| 2026-10-04 | **Un participante, un solo equipo** por edición |
+| 2026-10-04 | Los equipos son **de un solo sexo pero pueden mezclar edades**, y compiten en la **categoría del miembro de más edad** (calculada) |
 | 2026-10-04 | **No se borra nada**: bajas con historial y ediciones que se cierran |
