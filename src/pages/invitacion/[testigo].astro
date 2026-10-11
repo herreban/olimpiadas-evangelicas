@@ -1,0 +1,133 @@
+---
+/**
+ * Abrir un enlace de un solo uso: crear iglesia, darse de alta o poner contraseña nueva.
+ */
+import Base from '../../layouts/Base.astro';
+import { bd } from '../../db/conexion';
+import {
+  consultarEnlace, usarInvitacionIglesia, usarInvitacionUsuario, usarRecuperacion,
+} from '../../servidor/cuentas';
+import { LONGITUD_MINIMA_CONTRASENA } from '../../servidor/auth';
+import { campo, mensajeDeError, NOMBRE_ROL } from '../../servidor/paginas';
+
+const testigo = Astro.params.testigo ?? '';
+let error = '';
+let hecho: string | null = null;
+let valores: Record<string, string> = {};
+
+if (Astro.request.method === 'POST') {
+  const formulario = await Astro.request.formData();
+  valores = Object.fromEntries(['nombreIglesia', 'ciudad', 'nombre', 'usuario'].map((c) => [c, campo(formulario, c)]));
+  const contrasena = campo(formulario, 'contrasena');
+
+  try {
+    if (contrasena !== campo(formulario, 'repetir')) throw new Error('distintas');
+    const tipo = campo(formulario, 'tipo');
+    const datosCuenta = { nombre: valores.nombre!, usuario: valores.usuario!, contrasena };
+    if (tipo === 'iglesia') {
+      await usarInvitacionIglesia(bd(), testigo, { ...datosCuenta, nombreIglesia: valores.nombreIglesia!, ciudad: valores.ciudad! });
+      hecho = `Iglesia creada. Ya puedes entrar con el usuario «${valores.usuario!.trim().toLowerCase()}».`;
+    } else if (tipo === 'usuario') {
+      await usarInvitacionUsuario(bd(), testigo, datosCuenta);
+      hecho = `Cuenta creada. Ya puedes entrar con el usuario «${valores.usuario!.trim().toLowerCase()}».`;
+    } else if (tipo === 'recuperacion') {
+      const { usuario } = await usarRecuperacion(bd(), testigo, { contrasena });
+      hecho = `Contraseña cambiada. Ya puedes entrar con el usuario «${usuario}» y la contraseña nueva.`;
+    }
+  } catch (e) {
+    error = e instanceof Error && e.message === 'distintas'
+      ? 'Las dos contraseñas no coinciden.'
+      : mensajeDeError(e);
+    Astro.response.status = 400;
+  }
+}
+
+const enlace = hecho ? null : await consultarEnlace(bd(), testigo);
+const MOTIVOS = {
+  no_existe: 'Este enlace no existe. Revisa que lo hayas copiado entero.',
+  usada: 'Este enlace ya se ha usado. Si necesitas otro, pídeselo a quien te lo mandó.',
+  anulada: 'Este enlace se ha anulado. Si necesitas otro, pídeselo a quien te lo mandó.',
+  caducada: 'Este enlace ha caducado. Pide otro a quien te lo mandó.',
+} as const;
+
+const titulo = !enlace || !enlace.valido
+  ? 'Enlace'
+  : enlace.tipo === 'iglesia' ? 'Crear tu iglesia'
+  : enlace.tipo === 'usuario' ? 'Crear tu cuenta'
+  : 'Contraseña nueva';
+---
+
+<Base titulo={titulo}>
+  <section class="tarjeta">
+    <h1 class="text-2xl font-bold">{titulo}</h1>
+
+    {hecho && (
+      <div class="mt-4 space-y-4">
+        <p class="aviso-ok">{hecho}</p>
+        <a href="/entrar" class="boton">Ir a entrar</a>
+      </div>
+    )}
+
+    {enlace && !enlace.valido && <p class="aviso-error mt-4">{MOTIVOS[enlace.motivo]}</p>}
+
+    {enlace?.valido && (
+      <>
+        <p class="mt-1 text-sm text-slate-600">
+          {enlace.tipo === 'iglesia' && 'Rellena los datos de tu iglesia y los de tu cuenta. Serás su administrador.'}
+          {enlace.tipo === 'usuario' && <>Te han invitado a <strong>{enlace.iglesia}</strong> como <strong>{NOMBRE_ROL[enlace.rol!].toLowerCase()}</strong>.</>}
+          {enlace.tipo === 'recuperacion' && <>Pon una contraseña nueva para el usuario <strong>{enlace.paraUsuario}</strong>.</>}
+        </p>
+
+        {error && <p class="aviso-error mt-4" role="alert">{error}</p>}
+
+        <form method="post" class="mt-4 space-y-4">
+          <input type="hidden" name="tipo" value={enlace.tipo} />
+
+          {enlace.tipo === 'iglesia' && (
+            <>
+              <label class="etiqueta">
+                Nombre de la iglesia
+                <input name="nombreIglesia" required maxlength="100" class="entrada"
+                  value={valores.nombreIglesia ?? String(enlace.datos.nombreIglesia ?? '')} />
+              </label>
+              <label class="etiqueta">
+                Ciudad
+                <input name="ciudad" required maxlength="100" class="entrada" value={valores.ciudad ?? ''} />
+              </label>
+            </>
+          )}
+
+          {enlace.tipo !== 'recuperacion' && (
+            <>
+              <label class="etiqueta">
+                Tu nombre
+                <input name="nombre" required maxlength="100" autocomplete="name" class="entrada"
+                  value={valores.nombre ?? String(enlace.datos.nombre ?? '')} />
+              </label>
+              <label class="etiqueta">
+                Usuario para entrar
+                <input name="usuario" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.]{3,30}"
+                  autocomplete="username" autocapitalize="none" spellcheck="false" class="entrada" value={valores.usuario ?? ''} />
+                <span class="mt-1 block text-xs font-normal text-slate-500">Letras sin tilde, números, puntos o guiones bajos. Por ejemplo: maria.lopez</span>
+              </label>
+            </>
+          )}
+
+          <label class="etiqueta">
+            Contraseña
+            <input name="contrasena" type="password" required minlength={LONGITUD_MINIMA_CONTRASENA} maxlength="128" autocomplete="new-password" class="entrada" />
+            <span class="mt-1 block text-xs font-normal text-slate-500">Al menos {LONGITUD_MINIMA_CONTRASENA} caracteres.</span>
+          </label>
+          <label class="etiqueta">
+            Repite la contraseña
+            <input name="repetir" type="password" required minlength={LONGITUD_MINIMA_CONTRASENA} maxlength="128" autocomplete="new-password" class="entrada" />
+          </label>
+
+          <button class="boton w-full">
+            {enlace.tipo === 'iglesia' ? 'Crear la iglesia' : enlace.tipo === 'usuario' ? 'Crear mi cuenta' : 'Cambiar la contraseña'}
+          </button>
+        </form>
+      </>
+    )}
+  </section>
+</Base>

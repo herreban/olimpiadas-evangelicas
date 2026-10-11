@@ -1,0 +1,36 @@
+---
+import type { UsuarioListado } from '../servidor/cuentas';
+import { NOMBRE_ROL } from '../servidor/paginas';
+
+interface Props {
+  usuarios: UsuarioListado[];
+  /** Enseñar la iglesia de cada uno (solo en la vista de la plataforma). */
+  conIglesia?: boolean;
+}
+
+const { usuarios, conIglesia = false } = Astro.props;
+---
+
+<section class="tarjeta">
+  <h2 class="text-lg font-semibold">Usuarios</h2>
+  <ul class="mt-2 divide-y divide-slate-100">
+    {usuarios.map((u) => (
+      <li class="flex flex-wrap items-center justify-between gap-2 py-3">
+        <div>
+          <p class="font-medium">
+            {u.nombre} <span class="font-normal text-slate-500">({u.usuario})</span>
+            {!u.activo && <span class="ml-1 text-xs text-amber-700">de baja</span>}
+          </p>
+          <p class="text-xs text-slate-500">
+            {NOMBRE_ROL[u.rol]}{conIglesia && u.iglesia && ` · ${u.iglesia}`}
+          </p>
+        </div>
+        <form method="post">
+          <input type="hidden" name="accion" value="recuperar" />
+          <input type="hidden" name="usuario" value={u.usuarioId} />
+          <button class="boton-secundario">Enlace de contraseña nueva</button>
+        </form>
+      </li>
+    ))}
+  </ul>
+</section>

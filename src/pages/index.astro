@@ -1,42 +1,41 @@
 ---
+import Base from '../layouts/Base.astro';
 import CalculadoraCategoria from '../components/CalculadoraCategoria';
-import '../styles/global.css';
+import { bd } from '../db/conexion';
+import { miIglesia } from '../servidor/cuentas';
 
-const anioEdicion = 2026;
+// El middleware ya ha mandado a /entrar a quien no ha entrado.
+const actor = Astro.locals.actor!;
+const iglesia = await miIglesia(bd(), actor);
+const anioEdicion = new Date().getFullYear();
 ---
 
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Olimpiadas Evangélicas</title>
-    <meta name="description" content="Olimpiadas infantiles y entrenamientos para varias iglesias, cada una con sus datos aislados" />
-  </head>
-  <body class="mx-auto max-w-2xl px-4 py-8">
-    <header>
-      <h1 class="text-3xl font-bold tracking-tight">Olimpiadas Evangélicas</h1>
-      <p class="mt-2 text-slate-700">
-        Olimpiadas infantiles y seguimiento de entrenamientos durante todo el año.
-        Cada iglesia entra con su cuenta y ve solo sus datos.
-      </p>
-    </header>
+<Base titulo="Inicio">
+  <section>
+    <h1 class="text-2xl font-bold">{iglesia ? iglesia.nombre : 'Plataforma'}</h1>
+    {iglesia && <p class="text-slate-600">{iglesia.ciudad}</p>}
+  </section>
 
-    <main class="mt-8 space-y-6">
-      <CalculadoraCategoria client:load anioEdicion={anioEdicion} />
+  {actor.rol === 'plataforma' && (
+    <a href="/plataforma" class="tarjeta block hover:bg-slate-50">
+      <h2 class="text-lg font-semibold">Iglesias y enlaces →</h2>
+      <p class="text-sm text-slate-600">Dar de alta iglesias y ayudar con las contraseñas.</p>
+    </a>
+  )}
 
-      <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 class="text-base font-semibold">Cómo va el proyecto</h2>
-        <p class="mt-1 text-sm text-slate-600">
-          Fase 1 en marcha: cimientos de la aplicación. Esta página es la comprobación de que el
-          proyecto arranca, que la lógica se comparte con las islas interactivas y que las
-          comprobaciones automáticas funcionan.
-        </p>
-      </section>
-    </main>
+  {actor.rol === 'admin_iglesia' && (
+    <a href="/iglesia/usuarios" class="tarjeta block hover:bg-slate-50">
+      <h2 class="text-lg font-semibold">Usuarios de la iglesia →</h2>
+      <p class="text-sm text-slate-600">Invitar voluntarios y administradores, y dar enlaces de contraseña nueva.</p>
+    </a>
+  )}
 
-    <footer class="mt-10 text-sm text-slate-500">
-      <p>Escrito en castellano, para usarse desde el móvil.</p>
-    </footer>
-  </body>
-</html>
+  <CalculadoraCategoria client:load anioEdicion={anioEdicion} />
+
+  <section class="tarjeta">
+    <h2 class="text-base font-semibold">Cómo va el proyecto</h2>
+    <p class="mt-1 text-sm text-slate-600">
+      Fase 1: cuentas, iglesias y papeles. Los participantes, las ediciones y las pruebas llegan en la fase 2.
+    </p>
+  </section>
+</Base>
