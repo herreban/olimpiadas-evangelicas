@@ -1,0 +1,36 @@
+---
+import type { InvitacionPendiente } from '../servidor/cuentas';
+import { fechaHora, NOMBRE_ROL } from '../servidor/paginas';
+
+interface Props {
+  enlaces: InvitacionPendiente[];
+}
+
+const { enlaces } = Astro.props;
+
+function descripcion(enlace: InvitacionPendiente): string {
+  if (enlace.tipo === 'iglesia') return `Nueva iglesia${enlace.datos.nombreIglesia ? `: ${enlace.datos.nombreIglesia}` : ''}`;
+  if (enlace.tipo === 'recuperacion') return `Contraseña nueva para ${enlace.paraQuien ?? '—'}`;
+  return `${NOMBRE_ROL[enlace.rol!]}${enlace.datos.nombre ? `: ${enlace.datos.nombre}` : ''}`;
+}
+---
+
+<section class="tarjeta">
+  <h2 class="text-lg font-semibold">Enlaces pendientes</h2>
+  {enlaces.length === 0 && <p class="mt-2 text-sm text-slate-600">No hay ningún enlace sin usar.</p>}
+  <ul class="mt-2 divide-y divide-slate-100">
+    {enlaces.map((enlace) => (
+      <li class="flex flex-wrap items-center justify-between gap-2 py-3">
+        <div>
+          <p class="font-medium">{descripcion(enlace)}</p>
+          <p class="text-xs text-slate-500">Caduca el {fechaHora(enlace.caducaEn)}</p>
+        </div>
+        <form method="post">
+          <input type="hidden" name="accion" value="anular" />
+          <input type="hidden" name="invitacion" value={enlace.id} />
+          <button class="boton-secundario">Anular</button>
+        </form>
+      </li>
+    ))}
+  </ul>
+</section>

@@ -13,6 +13,26 @@ env:
 jobs:
   comprobar:
     runs-on: ubuntu-latest
+
+    # Una PostgreSQL de usar y tirar para las pruebas (aislamiento entre iglesias, login…).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: olimpiadas_pruebas
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL_PRUEBAS: postgres://postgres:postgres@localhost:5432/olimpiadas_pruebas
+
     steps:
       - name: Descargar el código
         uses: actions/checkout@v4
@@ -31,6 +51,14 @@ jobs:
 
       - name: Ejecutar las pruebas
         run: npm run test
+
+      - name: Comprobar que las migraciones están al día con el esquema
+        run: |
+          npx drizzle-kit generate --name comprobacion
+          if [ -n "$(git status --porcelain -- drizzle)" ]; then
+            echo "El esquema ha cambiado y falta su migración: ejecuta npm run bd:generar"
+            exit 1
+          fi
 
       - name: Comprobar que se construye
         run: npm run build

@@ -1,0 +1,91 @@
+---
+/**
+ * Administración de la plataforma: crear iglesias (por invitación) y ayudar con contraseñas.
+ */
+import Base from '../../layouts/Base.astro';
+import EnlaceParaCompartir from '../../components/EnlaceParaCompartir';
+import ListaEnlaces from '../../components/ListaEnlaces.astro';
+import ListaUsuarios from '../../components/ListaUsuarios.astro';
+import { bd } from '../../db/conexion';
+import {
+  anularInvitacion, crearInvitacionIglesia, crearRecuperacion, listarIglesias, listarInvitacionesPendientes,
+  listarUsuarios, type EnlaceCreado,
+} from '../../servidor/cuentas';
+import { campo, enlacePublico, fechaHora, mensajeDeError } from '../../servidor/paginas';
+
+const actor = Astro.locals.actor!;
+let error = '';
+let aviso = '';
+let creado: { enlace: string; mensaje: string } | null = null;
+
+const compartir = (c: EnlaceCreado, mensaje: string) => ({ enlace: enlacePublico(`/invitacion/${c.testigo}`, Astro.url), mensaje });
+
+if (Astro.request.method === 'POST') {
+  const formulario = await Astro.request.formData();
+  try {
+    switch (campo(formulario, 'accion')) {
+      case 'invitar-iglesia': {
+        const c = await crearInvitacionIglesia(bd(), actor, { nombreIglesia: campo(formulario, 'nombreIglesia') });
+        creado = compartir(c, 'Con este enlace puedes dar de alta tu iglesia en las Olimpiadas Evangélicas:');
+        break;
+      }
+      case 'recuperar': {
+        const c = await crearRecuperacion(bd(), actor, campo(formulario, 'usuario'));
+        creado = compartir(c, 'Con este enlace puedes poner una contraseña nueva (caduca en 24 horas):');
+        break;
+      }
+      case 'anular':
+        await anularInvitacion(bd(), actor, campo(formulario, 'invitacion'));
+        aviso = 'Enlace anulado.';
+        break;
+    }
+  } catch (e) {
+    error = mensajeDeError(e);
+  }
+}
+
+const [iglesias, enlaces, usuarios] = await Promise.all([
+  listarIglesias(bd(), actor),
+  listarInvitacionesPendientes(bd(), actor),
+  listarUsuarios(bd(), actor),
+]);
+---
+
+<Base titulo="Plataforma">
+  <h1 class="text-2xl font-bold">Administración de la plataforma</h1>
+
+  {error && <p class="aviso-error" role="alert">{error}</p>}
+  {aviso && <p class="aviso-ok">{aviso}</p>}
+  {creado && <div><EnlaceParaCompartir client:load enlace={creado.enlace} mensaje={creado.mensaje} /></div>}
+
+  <section class="tarjeta">
+    <h2 class="text-lg font-semibold">Dar de alta una iglesia</h2>
+    <p class="mt-1 text-sm text-slate-600">
+      Se crea un enlace de un solo uso (caduca en 7 días). Quien lo abra crea la iglesia y su cuenta de administrador.
+    </p>
+    <form method="post" class="mt-3 space-y-3">
+      <input type="hidden" name="accion" value="invitar-iglesia" />
+      <label class="etiqueta">
+        Nombre de la iglesia (opcional, se puede cambiar al abrir el enlace)
+        <input name="nombreIglesia" maxlength="100" class="entrada" />
+      </label>
+      <button class="boton">Crear enlace</button>
+    </form>
+  </section>
+
+  <section class="tarjeta">
+    <h2 class="text-lg font-semibold">Iglesias</h2>
+    {iglesias.length === 0 && <p class="mt-2 text-sm text-slate-600">Todavía no hay ninguna.</p>}
+    <ul class="mt-2 divide-y divide-slate-100">
+      {iglesias.map((i) => (
+        <li class="py-3">
+          <p class="font-medium">{i.nombre} <span class="font-normal text-slate-500">· {i.ciudad}</span></p>
+          <p class="text-xs text-slate-500">Desde el {fechaHora(i.creadaEn)}{!i.activa && ' · desactivada'}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <ListaEnlaces enlaces={enlaces} />
+  <ListaUsuarios usuarios={usuarios} conIglesia />
+</Base>

@@ -1,0 +1,90 @@
+---
+/**
+ * Usuarios de la iglesia: invitar, anular enlaces y dar enlaces de contraseña nueva.
+ * Todo lo que se ve y se toca aquí es de la iglesia de quien ha entrado (lo filtra el servidor).
+ */
+import Base from '../../layouts/Base.astro';
+import EnlaceParaCompartir from '../../components/EnlaceParaCompartir';
+import ListaEnlaces from '../../components/ListaEnlaces.astro';
+import ListaUsuarios from '../../components/ListaUsuarios.astro';
+import { bd } from '../../db/conexion';
+import {
+  anularInvitacion, crearInvitacionUsuario, crearRecuperacion, listarInvitacionesPendientes, listarUsuarios,
+  type EnlaceCreado,
+} from '../../servidor/cuentas';
+import { campo, enlacePublico, mensajeDeError } from '../../servidor/paginas';
+
+const actor = Astro.locals.actor!;
+let error = '';
+let aviso = '';
+let creado: { enlace: string; mensaje: string } | null = null;
+
+const compartir = (c: EnlaceCreado, mensaje: string) => ({ enlace: enlacePublico(`/invitacion/${c.testigo}`, Astro.url), mensaje });
+
+if (Astro.request.method === 'POST') {
+  const formulario = await Astro.request.formData();
+  try {
+    switch (campo(formulario, 'accion')) {
+      case 'invitar': {
+        const rol = campo(formulario, 'rol') === 'admin_iglesia' ? 'admin_iglesia' : 'voluntario';
+        const c = await crearInvitacionUsuario(bd(), actor, { rol, nombre: campo(formulario, 'nombre') });
+        creado = compartir(c, 'Con este enlace puedes crear tu cuenta para las Olimpiadas Evangélicas:');
+        break;
+      }
+      case 'recuperar': {
+        const c = await crearRecuperacion(bd(), actor, campo(formulario, 'usuario'));
+        creado = compartir(c, 'Con este enlace puedes poner una contraseña nueva (caduca en 24 horas):');
+        break;
+      }
+      case 'anular':
+        await anularInvitacion(bd(), actor, campo(formulario, 'invitacion'));
+        aviso = 'Enlace anulado.';
+        break;
+    }
+  } catch (e) {
+    error = mensajeDeError(e);
+  }
+}
+
+const [enlaces, usuarios] = await Promise.all([
+  listarInvitacionesPendientes(bd(), actor),
+  listarUsuarios(bd(), actor),
+]);
+---
+
+<Base titulo="Usuarios">
+  <h1 class="text-2xl font-bold">Usuarios de la iglesia</h1>
+
+  {error && <p class="aviso-error" role="alert">{error}</p>}
+  {aviso && <p class="aviso-ok">{aviso}</p>}
+  {creado && <div><EnlaceParaCompartir client:load enlace={creado.enlace} mensaje={creado.mensaje} /></div>}
+
+  <section class="tarjeta">
+    <h2 class="text-lg font-semibold">Invitar a alguien</h2>
+    <p class="mt-1 text-sm text-slate-600">
+      Se crea un enlace de un solo uso (caduca en 7 días). Mándaselo por WhatsApp o en persona.
+    </p>
+    <form method="post" class="mt-3 space-y-3">
+      <input type="hidden" name="accion" value="invitar" />
+      <label class="etiqueta">
+        Nombre (opcional, para reconocer el enlace)
+        <input name="nombre" maxlength="100" class="entrada" />
+      </label>
+      <fieldset>
+        <legend class="etiqueta">Papel</legend>
+        <div class="mt-1 flex flex-wrap gap-4">
+          <label class="flex items-center gap-2 text-base">
+            <input type="radio" name="rol" value="voluntario" checked class="size-5" /> Voluntario
+          </label>
+          <label class="flex items-center gap-2 text-base">
+            <input type="radio" name="rol" value="admin_iglesia" class="size-5" /> Administrador
+          </label>
+        </div>
+      </fieldset>
+      <button class="boton">Crear enlace</button>
+    </form>
+  </section>
+
+  <ListaEnlaces enlaces={enlaces} />
+  <ListaUsuarios usuarios={usuarios} />
+</Base>

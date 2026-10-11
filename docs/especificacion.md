@@ -228,9 +228,10 @@ Tablas y campos principales. Todas las tablas con `iglesia_id` lo llevan para el
 administrador de la plataforma), rol (`plataforma` | `admin_iglesia` | `voluntario`), nombre
 mostrado, activo, creado_en.
 
-**`invitaciones`** — id, testigo (único), tipo (`iglesia` | `usuario` | `recuperacion`),
-iglesia_id (vacío en las de tipo iglesia), rol, datos propuestos, creada_por, creada_en,
-caduca_en, usada_en, usada_por.
+**`invitaciones`** — id, testigo (único; se guarda **solo su huella**, nunca el enlace en claro),
+tipo (`iglesia` | `usuario` | `recuperacion`), iglesia_id (vacío en las de tipo iglesia), rol,
+usuario_destino_id (solo en las de recuperación: de quién es la contraseña), datos propuestos,
+creada_por, creada_en, caduca_en, anulada_en, usada_en, usada_por.
 
 **`ediciones`** — id, iglesia_id, año, fecha del evento, estado (`borrador` | `abierta` |
 `cerrada`), creada_en. Único: (iglesia_id, año).
@@ -321,7 +322,7 @@ Quién hizo qué y cuándo: marcar, desmarcar, altas, bajas, cambios de equipo.
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Esta especificación y el modelo de datos | **cerrada en lo esencial** |
-| 1 | Cimientos: proyecto, base de datos y migraciones, login, iglesias, papeles, aislamiento, pruebas automáticas y verificación en cada PR | pendiente |
+| 1 | Cimientos: proyecto, base de datos y migraciones, login, iglesias, papeles, aislamiento, pruebas automáticas y verificación en cada PR | **en revisión** |
 | 2 | Participantes (fecha de nacimiento, categorías), ediciones y catálogo de pruebas con su ficha | pendiente |
 | 3 | Plazas e inscripciones, equipos de relevos, pruebas del día, filtros y regla de la cascada | pendiente |
 | 4 | Entrenamientos: anotar marcas, evolución y mejores marcas | pendiente |
@@ -378,3 +379,8 @@ fase sin cerrar la anterior.
 | 2026-10-04 | Confirmado: **la plaza es por sexo**, una por categoría y sexo |
 | 2026-10-04 | **Un solo equipo por iglesia, categoría y sexo**, y un participante en un solo equipo: en relevos compite un equipo por edad y sexo |
 | 2026-10-04 | El **nombre del equipo es opcional**: si no se pone, se muestra por su categoría y sexo |
+| 2026-10-11 | Se entra con **nombre de usuario** (letras sin tilde, números, puntos y guiones bajos). Better Auth exige un correo por dentro: se rellena con uno interno que no lleva a ninguna parte |
+| 2026-10-11 | Los enlaces de un solo uso se guardan **solo como huella**: un enlace se ve una única vez al crearlo; si se pierde, se anula y se crea otro |
+| 2026-10-11 | Freno al login: tras **5 fallos en 15 minutos** con el mismo usuario o desde la misma dirección, hay que esperar |
+| 2026-10-11 | Al recuperar la contraseña se **cierran todas las sesiones** abiertas de esa persona |
+| 2026-10-11 | La primera cuenta (administrador de la plataforma) se crea en el servidor con `npm run crear-administrador` |
